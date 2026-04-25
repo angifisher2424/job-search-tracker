@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Search Tracker</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --bg-secondary: #f7f7f5;
+      --bg-tertiary: #f0efea;
+      --text: #1a1a18;
+      --text-secondary: #6b6b67;
+      --text-hint: #9a9a95;
+      --border: rgba(0,0,0,0.12);
+      --border-md: rgba(0,0,0,0.22);
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --font: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1c1a;
+        --bg-secondary: #252523;
+        --bg-tertiary: #2e2e2b;
+        --text: #f0efe8;
+        --text-secondary: #a0a09a;
+        --text-hint: #6a6a65;
+        --border: rgba(255,255,255,0.1);
+        --border-md: rgba(255,255,255,0.2);
+      }
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg-tertiary);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .app { max-width: 1000px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+    .header { margin-bottom: 2rem; }
+    .header h1 { font-size: 24px; font-weight: 600; color: var(--text); }
+    .header p { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 2rem; }
+    @media (max-width: 600px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+    .stat { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 14px 16px; }
+    .stat-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+    .stat-value { font-size: 26px; font-weight: 600; }
+    .stat-value.blue { color: #185FA5; }
+    .stat-value.amber { color: #9a5c0a; }
+    .stat-value.green { color: #3B6D11; }
+
+    .tabs { display: flex; gap: 0; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border); }
+    .tab { padding: 9px 20px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; background: none; color: var(--text-secondary); border-bottom: 2px solid transparent; margin-bottom: -1px; font-family: var(--font); transition: color 0.15s; }
+    .tab.active { color: var(--text); border-bottom-color: var(--text); }
+
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; gap: 10px; flex-wrap: wrap; }
+    .search-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .search-row input, .search-row select {
+      border: 0.5px solid var(--border-md);
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+      font-size: 13px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      outline: none;
+    }
+    .search-row input { width: 220px; }
+    .search-row input:focus, .search-row select:focus { border-color: #185FA5; box-shadow: 0 0 0 3px rgba(24,95,165,0.1); }
+
+    .add-btn {
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: var(--font);
+      white-space: nowrap;
+      transition: opacity 0.15s;
+    }
+    .add-btn:hover { opacity: 0.85; }
+
+    .table-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+    th { font-size: 11px; font-weight: 500; color: var(--text-secondary); text-align: left; padding: 10px 14px; border-bottom: 0.5px solid var(--border); background: var(--bg-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+    td { padding: 12px 14px; border-bottom: 0.5px solid var(--border); color: var(--text); vertical-align: top; word-break: break-word; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--bg-secondary); }
+
+    .badge { display: inline-block; font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 500; white-space: nowrap; }
+    .badge-applied    { background: #E6F1FB; color: #185FA5; }
+    .badge-interviewing { background: #FAEEDA; color: #854F0B; }
+    .badge-networking { background: #EEEDFE; color: #3C3489; }
+    .badge-offer      { background: #EAF3DE; color: #3B6D11; }
+    .badge-declined   { background: #F1EFE8; color: #5F5E5A; }
+    .badge-waiting    { background: #FFF3CD; color: #856404; }
+
+    .action-btn { background: none; border: 0.5px solid var(--border-md); border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; color: var(--text-secondary); font-family: var(--font); margin-right: 4px; transition: all 0.12s; }
+    .action-btn:hover { background: var(--bg-secondary); color: var(--text); }
+    .action-btn.danger:hover { background: #FCEBEB; color: #A32D2D; border-color: #F09595; }
+
+    .resume-tag { background: #EAF3DE; color: #3B6D11; font-size: 11px; padding: 3px 9px; border-radius: 20px; display: inline-block; font-weight: 500; }
+
+    .empty { text-align: center; padding: 3.5rem 1rem; color: var(--text-secondary); }
+    .empty-icon { font-size: 32px; margin-bottom: 12px; }
+    .empty p { font-size: 14px; }
+    .empty small { font-size: 12px; color: var(--text-hint); margin-top: 4px; display: block; }
+
+    /* Modal */
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 1rem; }
+    .modal { background: var(--bg); border-radius: var(--radius-lg); border: 0.5px solid var(--border); padding: 1.75rem; width: 520px; max-width: 100%; max-height: 90vh; overflow-y: auto; }
+    .modal h2 { font-size: 17px; font-weight: 600; margin-bottom: 1.5rem; }
+    .form-row { margin-bottom: 14px; }
+    .form-row label { display: block; font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 5px; }
+    .form-row input, .form-row select, .form-row textarea {
+      width: 100%;
+      border: 0.5px solid var(--border-md);
+      border-radius: var(--radius-md);
+      padding: 9px 12px;
+      font-size: 13px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+      border-color: #185FA5;
+      box-shadow: 0 0 0 3px rgba(24,95,165,0.1);
+    }
+    .form-row textarea { resize: vertical; min-height: 80px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 1.5rem; padding-top: 1rem; border-top: 0.5px solid var(--border); }
+    .btn-cancel { background: none; border: 0.5px solid var(--border-md); border-radius: var(--radius-md); padding: 9px 18px; font-size: 13px; cursor: pointer; color: var(--text-secondary); font-family: var(--font); }
+    .btn-save { background: var(--text); color: var(--bg); border: none; border-radius: var(--radius-md); padding: 9px 18px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--font); }
+    .btn-save:hover { opacity: 0.85; }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 500; z-index: 200; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+    .toast.show { opacity: 1; }
+
+    /* Export/Import bar */
+    .action-bar { display: flex; gap: 8px; margin-top: 1.25rem; flex-wrap: wrap; }
+    .bar-btn { background: none; border: 0.5px solid var(--border-md); border-radius: var(--radius-md); padding: 7px 14px; font-size: 12px; cursor: pointer; color: var(--text-secondary); font-family: var(--font); transition: all 0.12s; }
+    .bar-btn:hover { background: var(--bg-secondary); color: var(--text); }
+
+    .name-strong { font-weight: 500; }
+    .sub-text { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+    .next-chip { font-size: 11px; background: var(--bg-secondary); border-radius: 6px; padding: 3px 8px; color: var(--text-secondary); display: inline-block; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>Job Search Tracker</h1>
+    <p>Track contacts, applications, resumes, and next steps</p>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('contacts')">Contacts</button>
+    <button class="tab" onclick="switchTab('applications')">Applications</button>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-row">
+      <input type="text" id="search-input" placeholder="Search..." oninput="renderTable()">
+      <select id="filter-status" onchange="renderTable()">
+        <option value="">All statuses</option>
+        <option>Networking</option>
+        <option>Applied</option>
+        <option>Interviewing</option>
+        <option>Waiting</option>
+        <option>Offer</option>
+        <option>Declined</option>
+      </select>
+    </div>
+    <button class="add-btn" onclick="openModal()">+ Add entry</button>
+  </div>
+
+  <div class="table-card">
+    <div id="table-area"></div>
+  </div>
+
+  <div class="action-bar">
+    <button class="bar-btn" onclick="exportCSV()">Export CSV</button>
+    <button class="bar-btn" onclick="importCSV()">Import CSV</button>
+    <button class="bar-btn" onclick="exportJSON()">Backup (JSON)</button>
+    <button class="bar-btn" onclick="restoreJSON()">Restore backup</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="csv-file-input" accept=".csv" style="display:none" onchange="handleCSVImport(event)">
+<input type="file" id="json-file-input" accept=".json" style="display:none" onchange="handleJSONRestore(event)">
+
+<script>
+  let currentTab = 'contacts';
+
+  const DEFAULTS = {
+    contacts: [
+      { name: 'Kevin', company: 'Built for Leaders', role: 'Connection', status: 'Networking', outreachDate: '2026-04-10', nextStep: 'Follow up after intro call', notes: 'Facilitated by Srividya', resume: '' },
+    ],
+    applications: [
+      { name: 'Chief of Staff', company: 'OpenAI', role: 'Chief of Staff', status: 'Applied', outreachDate: '2026-03-20', nextStep: 'Awaiting response', notes: 'Strong alignment with AI strategy background', resume: 'CoS Resume v2' },
+      { name: 'Head of Global Transformation', company: 'Grant Thornton', role: 'Head of Global Transformation Office', status: 'Applied', outreachDate: '2026-03-28', nextStep: 'Follow up this week', notes: 'Consulting background strong fit', resume: 'Consulting Resume v3' },
+    ]
+  };
+
+  let contacts = JSON.parse(localStorage.getItem('jst_contacts') || 'null') || DEFAULTS.contacts;
+  let applications = JSON.parse(localStorage.getItem('jst_apps') || 'null') || DEFAULTS.applications;
+
+  function save() {
+    localStorage.setItem('jst_contacts', JSON.stringify(contacts));
+    localStorage.setItem('jst_apps', JSON.stringify(applications));
+  }
+
+  function getData() { return currentTab === 'contacts' ? contacts : applications; }
+
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2200);
+  }
+
+  function statusBadge(s) {
+    const map = { Applied:'applied', Interviewing:'interviewing', Networking:'networking', Offer:'offer', Declined:'declined', Waiting:'waiting' };
+    return `<span class="badge badge-${map[s]||'applied'}">${s}</span>`;
+  }
+
+  function updateStats() {
+    const all = [...contacts, ...applications];
+    const iv = all.filter(i => i.status === 'Interviewing').length;
+    const wa = all.filter(i => ['Waiting','Applied'].includes(i.status)).length;
+    const of = all.filter(i => i.status === 'Offer').length;
+    document.getElementById('stats').innerHTML = `
+      <div class="stat"><div class="stat-label">Total tracked</div><div class="stat-value">${all.length}</div></div>
+      <div class="stat"><div class="stat-label">Interviewing</div><div class="stat-value amber">${iv}</div></div>
+      <div class="stat"><div class="stat-label">Awaiting reply</div><div class="stat-value blue">${wa}</div></div>
+      <div class="stat"><div class="stat-label">Offers</div><div class="stat-value green">${of}</div></div>`;
+  }
+
+  function renderTable() {
+    const q = document.getElementById('search-input').value.toLowerCase();
+    const sf = document.getElementById('filter-status').value;
+    const data = getData().filter(r =>
+      (r.name+r.company+r.role+r.notes+r.nextStep).toLowerCase().includes(q) &&
+      (!sf || r.status === sf)
+    );
+
+    if (!data.length) {
+      document.getElementById('table-area').innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">📋</div>
+          <p>No entries yet</p>
+          <small>Click "+ Add entry" to get started</small>
+        </div>`;
+      updateStats(); return;
+    }
+
+    if (currentTab === 'contacts') {
+      document.getElementById('table-area').innerHTML = `
+        <table>
+          <thead><tr>
+            <th style="width:18%">Name</th>
+            <th style="width:17%">Company</th>
+            <th style="width:12%">Status</th>
+            <th style="width:11%">Date</th>
+            <th style="width:22%">Next step</th>
+            <th style="width:20%">Actions</th>
+          </tr></thead>
+          <tbody>${data.map(r => {
+            const idx = contacts.indexOf(r);
+            return `<tr>
+              <td><div class="name-strong">${esc(r.name)}</div><div class="sub-text">${esc(r.role)}</div></td>
+              <td>${esc(r.company)}</td>
+              <td>${statusBadge(r.status)}</td>
+              <td style="color:var(--text-secondary);font-size:12px">${r.outreachDate||'—'}</td>
+              <td>${r.nextStep ? `<span class="next-chip" title="${esc(r.nextStep)}">${esc(r.nextStep)}</span>` : '—'}</td>
+              <td>
+                <button class="action-btn" onclick="openModal(${idx})">Edit</button>
+                <button class="action-btn danger" onclick="deleteEntry(${idx})">Delete</button>
+              </td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table>`;
+    } else {
+      document.getElementById('table-area').innerHTML = `
+        <table>
+          <thead><tr>
+            <th style="width:18%">Role</th>
+            <th style="width:15%">Company</th>
+            <th style="width:12%">Status</th>
+            <th style="width:11%">Date</th>
+            <th style="width:14%">Resume</th>
+            <th style="width:16%">Next step</th>
+            <th style="width:14%">Actions</th>
+          </tr></thead>
+          <tbody>${data.map(r => {
+            const idx = applications.indexOf(r);
+            return `<tr>
+              <td><div class="name-strong">${esc(r.name)}</div><div class="sub-text">${esc(r.role)}</div></td>
+              <td>${esc(r.company)}</td>
+              <td>${statusBadge(r.status)}</td>
+              <td style="color:var(--text-secondary);font-size:12px">${r.outreachDate||'—'}</td>
+              <td>${r.resume ? `<span class="resume-tag">${esc(r.resume)}</span>` : '<span style="color:var(--text-secondary)">—</span>'}</td>
+              <td>${r.nextStep ? `<span class="next-chip" title="${esc(r.nextStep)}">${esc(r.nextStep)}</span>` : '—'}</td>
+              <td>
+                <button class="action-btn" onclick="openModal(${idx})">Edit</button>
+                <button class="action-btn danger" onclick="deleteEntry(${idx})">Delete</button>
+              </td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table>`;
+    }
+    updateStats();
+  }
+
+  function esc(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='contacts')||(i===1&&tab==='applications')));
+    document.getElementById('filter-status').value = '';
+    document.getElementById('search-input').value = '';
+    renderTable();
+  }
+
+  let editIndex = null;
+  function openModal(idx) {
+    editIndex = (idx !== undefined) ? idx : null;
+    const data = getData();
+    const r = editIndex !== null ? data[editIndex] : {};
+    const isApp = currentTab === 'applications';
+
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.id = 'modal-overlay';
+    overlay.onclick = e => { if(e.target===overlay) closeModal(); };
+    overlay.innerHTML = `
+      <div class="modal">
+        <h2>${editIndex !== null ? 'Edit entry' : 'Add new entry'}</h2>
+        <div class="form-grid">
+          <div class="form-row">
+            <label>${isApp ? 'Role / position title' : 'Contact name'}</label>
+            <input id="f-name" type="text" value="${esc(r.name||'')}">
+          </div>
+          <div class="form-row">
+            <label>Company / organization</label>
+            <input id="f-company" type="text" value="${esc(r.company||'')}">
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-row">
+            <label>${isApp ? 'Full role title' : 'Their title / role'}</label>
+            <input id="f-role" type="text" value="${esc(r.role||'')}">
+          </div>
+          <div class="form-row">
+            <label>Status</label>
+            <select id="f-status">
+              ${['Networking','Applied','Interviewing','Waiting','Offer','Declined'].map(s=>`<option ${r.status===s?'selected':''}>${s}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-row">
+            <label>${isApp ? 'Date applied' : 'Outreach date'}</label>
+            <input id="f-date" type="date" value="${r.outreachDate||''}">
+          </div>
+          <div class="form-row">
+            <label>Resume version</label>
+            <input id="f-resume" type="text" placeholder="e.g. COO Resume v2" value="${esc(r.resume||'')}">
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Next step</label>
+          <input id="f-nextstep" type="text" placeholder="e.g. Follow up Friday, Schedule call..." value="${esc(r.nextStep||'')}">
+        </div>
+        <div class="form-row">
+          <label>Notes</label>
+          <textarea id="f-notes">${esc(r.notes||'')}</textarea>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+          <button class="btn-save" onclick="saveEntry()">Save entry</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    document.getElementById('f-name').focus();
+  }
+
+  function closeModal() {
+    const el = document.getElementById('modal-overlay');
+    if (el) el.remove();
+  }
+
+  function saveEntry() {
+    const entry = {
+      name: document.getElementById('f-name').value.trim(),
+      company: document.getElementById('f-company').value.trim(),
+      role: document.getElementById('f-role').value.trim(),
+      status: document.getElementById('f-status').value,
+      outreachDate: document.getElementById('f-date').value,
+      resume: document.getElementById('f-resume').value.trim(),
+      nextStep: document.getElementById('f-nextstep').value.trim(),
+      notes: document.getElementById('f-notes').value.trim(),
+    };
+    if (!entry.name) { document.getElementById('f-name').focus(); return; }
+    const data = getData();
+    if (editIndex !== null) { data[editIndex] = entry; } else { data.push(entry); }
+    save(); closeModal(); renderTable();
+    toast(editIndex !== null ? 'Entry updated' : 'Entry added');
+  }
+
+  function deleteEntry(idx) {
+    if (!confirm('Delete this entry?')) return;
+    getData().splice(idx, 1);
+    save(); renderTable();
+    toast('Entry deleted');
+  }
+
+  // Keyboard: Escape closes modal
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  // CSV Export
+  function exportCSV() {
+    const data = getData();
+    const headers = ['name','company','role','status','outreachDate','resume','nextStep','notes'];
+    const rows = [headers.join(','), ...data.map(r => headers.map(h => `"${(r[h]||'').replace(/"/g,'""')}"`).join(','))];
+    download(`${currentTab}-${today()}.csv`, rows.join('\n'), 'text/csv');
+    toast('CSV exported');
+  }
+
+  function importCSV() { document.getElementById('csv-file-input').click(); }
+
+  function handleCSVImport(e) {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const lines = ev.target.result.trim().split('\n');
+        const headers = parseCSVLine(lines[0]);
+        const entries = lines.slice(1).map(l => {
+          const vals = parseCSVLine(l);
+          const obj = {};
+          headers.forEach((h,i) => obj[h.trim()] = (vals[i]||'').trim());
+          return obj;
+        }).filter(r => r.name);
+        if (currentTab === 'contacts') { contacts.push(...entries); }
+        else { applications.push(...entries); }
+        save(); renderTable();
+        toast(`Imported ${entries.length} entries`);
+      } catch { toast('Import failed — check CSV format'); }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }
+
+  function parseCSVLine(line) {
+    const result = []; let cur = ''; let inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { if (inQ && line[i+1]==='"') { cur+='"'; i++; } else { inQ=!inQ; } }
+      else if (c === ',' && !inQ) { result.push(cur); cur = ''; }
+      else cur += c;
+    }
+    result.push(cur); return result;
+  }
+
+  // JSON Backup/Restore
+  function exportJSON() {
+    const backup = { contacts, applications, exportedAt: new Date().toISOString() };
+    download(`jst-backup-${today()}.json`, JSON.stringify(backup, null, 2), 'application/json');
+    toast('Backup saved');
+  }
+
+  function restoreJSON() { document.getElementById('json-file-input').click(); }
+
+  function handleJSONRestore(e) {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (data.contacts) contacts = data.contacts;
+        if (data.applications) applications = data.applications;
+        save(); renderTable();
+        toast('Backup restored');
+      } catch { toast('Restore failed — invalid file'); }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }
+
+  function download(filename, content, type) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([content], {type}));
+    a.download = filename; a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function today() { return new Date().toISOString().slice(0,10); }
+
+  renderTable();
+</script>
+</body>
+</html>
