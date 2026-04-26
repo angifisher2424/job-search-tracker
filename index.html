@@ -86,6 +86,7 @@ tr:hover td{background:var(--bg2)}
 .badge-applied{background:var(--blue-bg);color:var(--blue-text)}.badge-interviewing{background:var(--amber-bg);color:var(--amber)}
 .badge-networking{background:var(--purple-bg);color:var(--purple)}.badge-offer{background:var(--green-bg);color:var(--green)}
 .badge-declined{background:var(--gray-bg);color:var(--gray)}.badge-waiting{background:var(--amber-bg);color:var(--amber)}
+.badge-rejected{background:var(--red-bg);color:var(--red)}
 .resume-tag{background:var(--green-bg);color:var(--green);font-size:11px;padding:3px 9px;border-radius:20px;display:inline-block;font-weight:500}
 
 /* ACTION BTNS */
@@ -100,8 +101,8 @@ tr:hover td{background:var(--bg2)}
 .empty-icon{font-size:32px;margin-bottom:12px}
 
 /* KANBAN */
-.kanban{display:grid;grid-template-columns:repeat(6,minmax(148px,1fr));gap:9px;overflow-x:auto;padding-bottom:1rem}
-@media(max-width:800px){.kanban{grid-template-columns:repeat(3,minmax(148px,1fr))}}
+.kanban{display:grid;grid-template-columns:repeat(7,minmax(140px,1fr));gap:9px;overflow-x:auto;padding-bottom:1rem}
+@media(max-width:800px){.kanban{grid-template-columns:repeat(3,minmax(140px,1fr))}}
 .k-col{background:var(--bg2);border-radius:var(--r);padding:9px;min-height:180px;border:0.5px solid var(--border)}
 .k-col-header{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);margin-bottom:9px;display:flex;justify-content:space-between;align-items:center}
 .k-count{background:var(--bg);border-radius:20px;padding:1px 7px;font-size:10px;color:var(--text2)}
@@ -135,6 +136,9 @@ tr:hover td{background:var(--bg2)}
 .resume-card-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
 .resume-card-tag{font-size:10px;padding:2px 8px;border-radius:20px;background:var(--bg2);color:var(--text2)}
 .resume-card-used{font-size:11px;color:var(--green);margin-top:8px}
+.resume-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--blue);text-decoration:none;margin-top:8px;font-weight:500}
+.resume-link:hover{text-decoration:underline}
+.source-tag{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500;background:var(--bg2);color:var(--text2);white-space:nowrap}
 
 /* MODAL */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:100;padding:1rem}
@@ -255,21 +259,21 @@ const PROFILE = {
 };
 
 // ── SMART FOLLOW-UP RULES ──
-const FOLLOWUP_DAYS = { Networking:5, Applied:7, Interviewing:3, Waiting:10, Offer:2, Declined:0 };
+const FOLLOWUP_DAYS = { Networking:5, Applied:7, Interviewing:3, Waiting:10, Offer:2, Declined:0, Rejected:0 };
 
 // ── DATA ──
 function uid(){ return Math.random().toString(36).slice(2,9) }
 const DEF = {
   contacts:[
-    {id:uid(),name:'Kevin',company:'Built for Leaders',role:'Connection',status:'Networking',outreachDate:'2026-04-10',followUpDate:'2026-04-15',nextStep:'Follow up after intro call',notes:'Facilitated by Srividya',resume:'',interviewPrep:'{}',emailDrafts:'',aiRec:'',aiRecTs:''},
+    {id:uid(),name:'Kevin',company:'Built for Leaders',role:'Connection',status:'Networking',outreachDate:'2026-04-10',followUpDate:'2026-04-15',nextStep:'Follow up after intro call',notes:'Facilitated by Srividya',source:'Referral',referrer:'Srividya',resume:'',interviewPrep:'{}',emailDrafts:'',aiRec:'',aiRecTs:''},
   ],
   applications:[
-    {id:uid(),name:'Chief of Staff',company:'OpenAI',role:'Chief of Staff',status:'Applied',outreachDate:'2026-03-20',followUpDate:'2026-03-27',nextStep:'Awaiting response',notes:'Strong alignment with AI strategy background',resume:'CoS / Strategic Ops Resume',interviewPrep:'{}',emailDrafts:'',aiRec:'',aiRecTs:''},
-    {id:uid(),name:'Head of Global Transformation',company:'Grant Thornton',role:'Head of Global Transformation Office',status:'Applied',outreachDate:'2026-03-28',followUpDate:'2026-04-04',nextStep:'Follow up this week',notes:'Consulting background strong fit',resume:'Executive Consulting Resume',interviewPrep:'{}',emailDrafts:'',aiRec:'',aiRecTs:''},
+    {id:uid(),name:'Chief of Staff',company:'OpenAI',role:'Chief of Staff',status:'Applied',outreachDate:'2026-03-20',followUpDate:'2026-03-27',nextStep:'Awaiting response',notes:'Strong alignment with AI strategy background',source:'Job board',referrer:'',resume:'CoS / Strategic Ops Resume',interviewPrep:'{}',emailDrafts:'',aiRec:'',aiRecTs:''},
+    {id:uid(),name:'Head of Global Transformation',company:'Grant Thornton',role:'Head of Global Transformation Office',status:'Applied',outreachDate:'2026-03-28',followUpDate:'2026-04-04',nextStep:'Follow up this week',notes:'Consulting background strong fit',source:'LinkedIn',referrer:'',resume:'Executive Consulting Resume',interviewPrep:'{}',emailDrafts:'',aiRec:'',aiRecTs:''},
   ],
   resumes:[
-    {id:uid(),name:'Executive Consulting Resume',version:'v3',targetRole:'Management Consulting / Transformation',lastUpdated:'2026-03-15',notes:'20 years exp, Nike/KP/WF clients highlighted',tags:['consulting','transformation','Fortune 500']},
-    {id:uid(),name:'CoS / Strategic Ops Resume',version:'v2',targetRole:'Chief of Staff / COO',lastUpdated:'2026-03-20',notes:'Emphasizes cross-functional leadership and AI strategy',tags:['CoS','COO','AI strategy','ops']},
+    {id:uid(),name:'Executive Consulting Resume',version:'v3',targetRole:'Management Consulting / Transformation',lastUpdated:'2026-03-15',notes:'20 years exp, Nike/KP/WF clients highlighted',tags:['consulting','transformation','Fortune 500'],driveUrl:''},
+    {id:uid(),name:'CoS / Strategic Ops Resume',version:'v2',targetRole:'Chief of Staff / COO',lastUpdated:'2026-03-20',notes:'Emphasizes cross-functional leadership and AI strategy',tags:['CoS','COO','AI strategy','ops'],driveUrl:''},
   ]
 };
 
@@ -302,7 +306,7 @@ function dueLabel(dateStr){
 }
 
 function statusBadge(s){
-  const m={Applied:'applied',Interviewing:'interviewing',Networking:'networking',Offer:'offer',Declined:'declined',Waiting:'waiting'};
+  const m={Applied:'applied',Interviewing:'interviewing',Networking:'networking',Offer:'offer',Declined:'declined',Waiting:'waiting',Rejected:'rejected'};
   return `<span class="badge badge-${m[s]||'applied'}">${s}</span>`;
 }
 
@@ -334,7 +338,7 @@ function updateStats(){
   const iv=all.filter(i=>i.status==='Interviewing').length;
   const wa=all.filter(i=>['Waiting','Applied'].includes(i.status)).length;
   const of=all.filter(i=>i.status==='Offer').length;
-  const due=all.filter(i=>i.followUpDate&&i.followUpDate<=today()&&!['Declined','Offer'].includes(i.status)).length;
+  const due=all.filter(i=>i.followUpDate&&i.followUpDate<=today()&&!['Declined','Rejected','Offer'].includes(i.status)).length;
   document.getElementById('stats').innerHTML=`
     <div class="stat" onclick="switchView('dashboard')"><div class="stat-label">Total tracked</div><div class="stat-value">${all.length}</div><div class="stat-sub">across all stages</div></div>
     <div class="stat" onclick="switchView('applications')"><div class="stat-label">Interviewing</div><div class="stat-value amber">${iv}</div><div class="stat-sub">active rounds</div></div>
@@ -372,14 +376,14 @@ function render(){
 // ── DASHBOARD ──
 function renderDashboard(){
   const all=[...contacts,...applications];
-  const statuses=['Networking','Applied','Interviewing','Waiting','Offer','Declined'];
+  const statuses=['Networking','Applied','Interviewing','Waiting','Offer','Declined','Rejected'];
   const counts=Object.fromEntries(statuses.map(s=>[s,all.filter(r=>r.status===s).length]));
   const total=all.length||1;
   const now=today();
-  const upcoming=all.filter(r=>r.followUpDate&&!['Declined','Offer'].includes(r.status))
+  const upcoming=all.filter(r=>r.followUpDate&&!['Declined','Rejected','Offer'].includes(r.status))
     .sort((a,b)=>a.followUpDate.localeCompare(b.followUpDate)).slice(0,6);
   const recent=[...all].sort((a,b)=>(b.outreachDate||'').localeCompare(a.outreachDate||'')).slice(0,5);
-  const barColors={Offer:'var(--green)',Interviewing:'var(--amber)',Declined:'var(--gray)',Applied:'var(--blue)',Networking:'var(--purple)',Waiting:'#9a5c0a'};
+  const barColors={Offer:'var(--green)',Interviewing:'var(--amber)',Declined:'var(--gray)',Rejected:'var(--red)',Applied:'var(--blue)',Networking:'var(--purple)',Waiting:'#9a5c0a'};
 
   document.getElementById('main-view').innerHTML=`
     <div class="dash-grid">
@@ -410,12 +414,27 @@ function renderDashboard(){
         ${recent.map(r=>`<div class="dash-row"><span><div class="name-strong">${esc(r.name)}</div><div class="sub-text">${esc(r.company)}</div></span><span>${statusBadge(r.status)}</span></div>`).join('')}
       </div>
       <div class="dash-card">
-        <h3>Resume usage</h3>
-        ${resumes.map(r=>{
-          const used=all.filter(e=>e.resume===r.name).length;
-          return `<div class="dash-row"><span><div class="name-strong">${esc(r.name)}</div><div class="sub-text">${esc(r.version)} · ${esc(r.targetRole)}</div></span><span class="dash-num">${used}×</span></div>`;
-        }).join('')}
-        <div style="margin-top:10px"><button class="bar-btn" onclick="switchView('resumes')">Manage resumes →</button></div>
+        <h3>How you're connecting</h3>
+        ${(()=>{
+          const sources=all.map(r=>r.source).filter(Boolean);
+          const counts={};
+          sources.forEach(s=>counts[s]=(counts[s]||0)+1);
+          const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+          const total=sources.length||1;
+          return sorted.length===0
+            ? '<div style="font-size:13px;color:var(--text2)">Add a "How we connected" source to your entries to see breakdown.</div>'
+            : sorted.map(([s,n])=>`
+                <div class="dash-row">
+                  <span><span class="source-tag">${esc(s)}</span></span>
+                  <span class="dash-num">${n}</span>
+                </div>
+                <div class="bar-wrap"><div class="bar-fill" style="width:${Math.round((n/total)*100)}%;background:var(--purple)"></div></div>
+              `).join('');
+        })()}
+        ${(()=>{
+          const referrals=all.filter(r=>r.referrer);
+          return referrals.length>0?`<div style="margin-top:10px;font-size:11px;color:var(--text2)">Referred by: ${[...new Set(referrals.map(r=>r.referrer))].join(', ')}</div>`:'';
+        })()}
       </div>
     </div>`;
 }
@@ -433,7 +452,7 @@ function renderTable(tab){
         <input type="text" id="si-${tab}" placeholder="Search…" oninput="renderTable('${tab}')">
         <select id="ss-${tab}" onchange="renderTable('${tab}')">
           <option value="">All statuses</option>
-          ${['Networking','Applied','Interviewing','Waiting','Offer','Declined'].map(s=>`<option>${s}</option>`).join('')}
+          ${['Networking','Applied','Interviewing','Waiting','Offer','Declined','Rejected'].map(s=>`<option>${s}</option>`).join('')}
         </select>
       </div>
       <button class="add-btn" onclick="openModal(null,'${tab}')">+ Add entry</button>
@@ -443,12 +462,13 @@ function renderTable(tab){
       ? `<div class="empty"><div class="empty-icon">📋</div><p>No entries yet — add your first!</p></div>`
       : `<table><thead><tr>
           <th style="width:${isApp?'16%':'17%'}">${isApp?'Role':'Name'}</th>
-          <th style="width:14%">Company</th>
-          <th style="width:10%">Status</th>
-          <th style="width:9%">Date</th>
-          <th style="width:12%">Follow-up</th>
-          ${isApp?`<th style="width:10%">Resume</th>`:''}
-          <th style="width:${isApp?'29%':'38%'}">Actions</th>
+          <th style="width:13%">Company</th>
+          <th style="width:9%">Status</th>
+          <th style="width:9%">Source</th>
+          <th style="width:8%">Date</th>
+          <th style="width:11%">Follow-up</th>
+          ${isApp?`<th style="width:9%">Resume</th>`:''}
+          <th style="width:${isApp?'25%':'33%'}">Actions</th>
         </tr></thead><tbody>
         ${data.map(r=>{
           const idx=getData(tab).indexOf(r);
@@ -456,14 +476,15 @@ function renderTable(tab){
           return `<tr>
             <td>
               <div class="name-strong">${esc(r.name)}</div>
-              <div class="sub-text">${esc(r.role)}</div>
+              <div class="sub-text">${esc(r.role)}${r.referrer?` · via ${esc(r.referrer)}`:''}</div>
               ${hasRec?`<div class="ai-rec" onclick="showRecModal(${idx},'${tab}')" title="${esc(r.aiRec.slice(0,80))}…">✨ AI suggestion</div>`:''}
             </td>
             <td>${esc(r.company)}</td>
             <td>${statusBadge(r.status)}</td>
+            <td>${r.source?`<span class="source-tag">${esc(r.source)}</span>`:'<span style="color:var(--text3);font-size:11px">—</span>'}</td>
             <td style="font-size:12px;color:var(--text2)">${r.outreachDate||'—'}</td>
             <td>${r.followUpDate?dueLabel(r.followUpDate):'<span style="color:var(--text3);font-size:11px">—</span>'}</td>
-            ${isApp?`<td>${r.resume?`<span class="resume-tag" style="font-size:10px">${esc(r.resume.split(' ').slice(0,2).join(' '))}</span>`:'<span style="color:var(--text3)">—</span>'}</td>`:''}
+            ${isApp?`<td>${r.resume?`<span class="resume-tag" style="font-size:10px">${esc(r.resume.split(' ').slice(0,2).join(' '))}</span>${(()=>{const rv=resumes.find(x=>x.name===r.resume);return rv&&rv.driveUrl?` <a href="${esc(rv.driveUrl)}" target="_blank" title="Open in Drive" style="color:var(--blue);font-size:11px;text-decoration:none">↗</a>`:''})()}`:'<span style="color:var(--text3)">—</span>'}</td>`:''}
             <td>
               <button class="action-btn" onclick="openModal(${idx},'${tab}')">Edit</button>
               <button class="action-btn ai-btn" onclick="getAIRec(${idx},'${tab}')">✨ Next step</button>
@@ -529,7 +550,7 @@ function applyRec(idx,tab){
 // ── KANBAN ──
 function renderKanban(){
   const all=[...contacts.map(r=>({...r,_tab:'contacts'})),...applications.map(r=>({...r,_tab:'applications'}))];
-  const cols=['Networking','Applied','Interviewing','Waiting','Offer','Declined'];
+  const cols=['Networking','Applied','Interviewing','Waiting','Offer','Declined','Rejected'];
   document.getElementById('main-view').innerHTML=`
     <div style="margin-bottom:1rem"><span class="section-title">Pipeline board</span></div>
     <div class="kanban">
@@ -571,6 +592,7 @@ function renderResumes(){
           <div style="font-size:12px;color:var(--text2);margin-top:4px">${esc(r.targetRole)}</div>
           ${r.notes?`<div style="font-size:11px;color:var(--text2);margin-top:5px;font-style:italic">${esc(r.notes)}</div>`:''}
           <div class="resume-card-tags">${(r.tags||[]).map(t=>`<span class="resume-card-tag">${esc(t)}</span>`).join('')}</div>
+          ${r.driveUrl?`<a href="${esc(r.driveUrl)}" target="_blank" class="resume-link">📄 Open in Google Drive</a>`:''}
           ${used>0?`<div class="resume-card-used">Used in ${used} application${used>1?'s':''}</div>`:''}
         </div>`;
       }).join('')}
@@ -581,7 +603,7 @@ function renderResumes(){
 // ── INTEGRATIONS (Gmail + Calendar) ──
 function renderIntegrations(){
   const all=[...contacts,...applications];
-  const due=all.filter(r=>r.followUpDate&&!['Declined','Offer'].includes(r.status))
+  const due=all.filter(r=>r.followUpDate&&!['Declined','Rejected','Offer'].includes(r.status))
     .sort((a,b)=>a.followUpDate.localeCompare(b.followUpDate)).slice(0,10);
 
   document.getElementById('main-view').innerHTML=`
@@ -633,7 +655,7 @@ async function generateDigest(){
   preview.textContent='Generating your digest…';
 
   const all=[...contacts,...applications];
-  const due=all.filter(r=>r.followUpDate&&!['Declined','Offer'].includes(r.status))
+  const due=all.filter(r=>r.followUpDate&&!['Declined','Rejected','Offer'].includes(r.status))
     .sort((a,b)=>a.followUpDate.localeCompare(b.followUpDate)).slice(0,8);
   const overdue=due.filter(r=>daysDiff(r.followUpDate)<0);
   const upcoming=due.filter(r=>daysDiff(r.followUpDate)>=0);
@@ -722,7 +744,7 @@ function openModal(idx, tab){
         <div class="form-row"><label>${isApp?'Full title':'Their role'}</label><input id="f-role" value="${esc(r.role||'')}"></div>
         <div class="form-row"><label>Status</label>
           <select id="f-status" onchange="onStatusChange(this.value)">
-            ${['Networking','Applied','Interviewing','Waiting','Offer','Declined'].map(s=>`<option ${r.status===s?'selected':''}>${s}</option>`).join('')}
+            ${['Networking','Applied','Interviewing','Waiting','Offer','Declined','Rejected'].map(s=>`<option ${r.status===s?'selected':''}>${s}</option>`).join('')}
           </select>
         </div>
       </div>
@@ -738,7 +760,15 @@ function openModal(idx, tab){
         <div class="form-row"><label>Resume used</label>
           <select id="f-resume"><option value="">— none —</option>${resumeOpts}</select>
         </div>
+        <div class="form-row"><label>How we connected</label>
+          <select id="f-source">
+            ${['','LinkedIn','Referral','Event / conference','Cold outreach','Recruiter','Job board','Battery SF','WCRC network','Point B network','Other'].map(s=>`<option ${r.source===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="form-grid">
         <div class="form-row"><label>Next step</label><input id="f-nextstep" placeholder="e.g. Follow up Friday…" value="${esc(r.nextStep||'')}"></div>
+        <div class="form-row"><label>Referred by</label><input id="f-referrer" placeholder="e.g. Srividya" value="${esc(r.referrer||'')}"></div>
       </div>
       <div class="form-row"><label>Notes</label><textarea id="f-notes">${esc(r.notes||'')}</textarea></div>
       <div class="modal-footer">
@@ -778,6 +808,8 @@ function saveEntry(){
     outreachDate:document.getElementById('f-date').value,
     followUpDate:document.getElementById('f-followup').value,
     resume:document.getElementById('f-resume').value,
+    source:document.getElementById('f-source').value,
+    referrer:document.getElementById('f-referrer').value.trim(),
     nextStep:document.getElementById('f-nextstep').value.trim(),
     notes:document.getElementById('f-notes').value.trim(),
     interviewPrep:editIndex!==null?(getData(editTarget)[editIndex].interviewPrep||'{}'):'{}',
@@ -1007,6 +1039,11 @@ function openResumeModal(idx){
       <div class="form-row"><label>Last updated</label><input id="rv-date" type="date" value="${r.lastUpdated||today()}"></div>
       <div class="form-row"><label>Key highlights / notes</label><textarea id="rv-notes">${esc(r.notes||'')}</textarea></div>
       <div class="form-row"><label>Tags (comma-separated)</label><input id="rv-tags" value="${esc((r.tags||[]).join(', '))}"></div>
+      <div class="form-row">
+        <label>Google Drive link</label>
+        <input id="rv-drive" type="url" placeholder="Paste your Google Drive share link here…" value="${esc(r.driveUrl||'')}">
+        <div style="font-size:11px;color:var(--text2);margin-top:4px">In Drive: right-click file → Share → Copy link</div>
+      </div>
       <div class="modal-footer">
         <button class="btn-cancel" onclick="closeModal()">Cancel</button>
         <button class="btn-save" onclick="saveResume(${idx})">Save</button>
@@ -1016,7 +1053,7 @@ function openResumeModal(idx){
 }
 
 function saveResume(idx){
-  const entry={id:idx!==null?resumes[idx].id:uid(),name:document.getElementById('rv-name').value.trim(),version:document.getElementById('rv-ver').value.trim(),targetRole:document.getElementById('rv-role').value.trim(),lastUpdated:document.getElementById('rv-date').value,notes:document.getElementById('rv-notes').value.trim(),tags:document.getElementById('rv-tags').value.split(',').map(t=>t.trim()).filter(Boolean)};
+  const entry={id:idx!==null?resumes[idx].id:uid(),name:document.getElementById('rv-name').value.trim(),version:document.getElementById('rv-ver').value.trim(),targetRole:document.getElementById('rv-role').value.trim(),lastUpdated:document.getElementById('rv-date').value,notes:document.getElementById('rv-notes').value.trim(),tags:document.getElementById('rv-tags').value.split(',').map(t=>t.trim()).filter(Boolean),driveUrl:document.getElementById('rv-drive').value.trim()};
   if(!entry.name){document.getElementById('rv-name').focus();return;}
   if(idx!==null){resumes[idx]=entry;}else{resumes.push(entry);}
   save(); closeModal(); render(); toast(idx!==null?'Resume updated':'Resume added');
