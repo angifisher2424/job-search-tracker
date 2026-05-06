@@ -1110,6 +1110,17 @@ function syncCalendarEvents(events){
   toast(`Synced ${events.length} upcoming events`);
 }
 
+// ── STARTUP FIX — clear follow-up dates on terminal statuses ──
+(function fixTerminalStatuses(){
+  const terminal=['Declined','Rejected','Passed','Completed','Offer'];
+  ['jst3_c','jst3_a'].forEach(key=>{
+    const data=JSON.parse(localStorage.getItem(key)||'[]');
+    let changed=false;
+    data.forEach(r=>{if(terminal.includes(r.status)&&r.followUpDate){r.followUpDate='';changed=true;}});
+    if(changed) localStorage.setItem(key,JSON.stringify(data));
+  });
+})();
+
 // ── INIT ──
 render();
 </script>
